@@ -49,8 +49,8 @@ public class Sobel {
      */
     private void saveImage(String path) {
         try {
-            File outputFile = new File("/res/output.png");
-            ImageIO.write(output, "png", outputFile);
+            File outputFile = new File("/Users/ben/Documents/ide-workspace/Java/Algorithms/221-sp23-hw01/res/output.jpg");
+            ImageIO.write(output, "jpg", outputFile);
         } catch (IOException e) {
             System.out.println("Exception saving specified output file");
             e.printStackTrace();
