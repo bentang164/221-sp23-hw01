@@ -58,7 +58,7 @@ public class Sobel {
     }
 
     /**
-     * Gets the individual RGB values at some point x, y in the loaded source image and returns them in an ArrayList. Example: {255, 255, 0}
+     * Gets the individual RGB values at some point x, y in the loaded source image and returns them in an ArrayList. Example: [255, 255, 0]
      * @param input
      * @param x
      * @param y
@@ -89,7 +89,9 @@ public class Sobel {
      * Applies the Sobel filter. 
      */
     private void applyFilter() {
+        // For each pixel along the x-axis of the input:
         for (int x = 1; x < source.getWidth() - 1; x++) {
+            // For each pixel along the y-axis of the input:
             for (int y = 1; y < source.getHeight() - 1; y++) {
                 int Gx = 0;
                 int Gy = 0;
@@ -97,16 +99,10 @@ public class Sobel {
 
                 Map<String, List<Integer>> preFilterRGB = new HashMap<>();
 
-                preFilterRGB.put("upperLeft", getRGB(x-1, y-1));
-                preFilterRGB.put("upperCenter", getRGB(x, y-1));
-                preFilterRGB.put("upperRight", getRGB(x+1, y-1));
-                preFilterRGB.put("centerLeft", getRGB(x-1, y));
-                preFilterRGB.put("center", getRGB(x, y));
-                preFilterRGB.put("centerRight", getRGB(x+1, y));
-                preFilterRGB.put("lowerLeft", getRGB(x-1, y+1));
-                preFilterRGB.put("lowerCenter", getRGB(x, y+1));
-                preFilterRGB.put("lowerRight", getRGB(x+1, y+1));
+                // Populates map with the RGB values for some certain point (x, y) and its neighbors
+                populateMap(preFilterRGB, x, y);
 
+                // Creates two new Maps assigned to a copy of the pre-filtered RGB values so that we don't have to repopulate when applying a different filter
                 Map<String, List<Integer>> xFilterRGB = preFilterRGB;
                 Map<String, List<Integer>> yFilterRGB = preFilterRGB;
 
@@ -115,13 +111,19 @@ public class Sobel {
                     int filterIndexX = 0;
                     int filterIndexY = 0;
                     
+                    // Assigns perLocationRGB to point to the current ArrayList containing RGB values for the current point
                     List<Integer> perLocationRGB = xFilterRGB.get(location);
 
                     // For each individual pixel in the current coordinates
                     for (int index = 0; index < 3; index++) {
+                        // Update the per-pixel RGB values by multiplying them by each corresponding value in the x-filter
                         perLocationRGB.set(index, perLocationRGB.get(index) * X_FILTER[filterIndexX][filterIndexY]);
                     }
 
+                    // If filterIndexX is less than two, we aren't at the end of the filter and can thus increment the counter to move to the next index
+                    // Else if filterIndexY is less than two, we're at the end of the filter and should move to the next row by incrementing the filterIndexY 
+                    // counter and resetting filterIndexX to zero
+                    // If both filterIndexX and filterIndexY are greater than or equal to two, we're done with the filter and shouldn't do anything.
                     if (filterIndexX < 2) {
                         filterIndexX++;
                     } else if (filterIndexY < 2) {
@@ -130,22 +132,25 @@ public class Sobel {
                     }
                 }
 
+                // For each ArrayList in the Map of x-filtered RGB values
                 for (String location: xFilterRGB.keySet()) {
+                    // For each RGB channel in the current ArrayList 
                     for (int color : xFilterRGB.get(location)) {
+                        // Sum into Gx
                         Gx += color;
                     }
                 }
 
+                // Take the average of the summed values: Knowing that each ArrayList contains exactly three values, we get the total by getting
+                // the number of ArrayLists in the Map and then multiplying it by three
                 Gx /= xFilterRGB.size() * 3;
 
-                // For each neighboring pixel to center, apply the y-filter
                 for (String location : yFilterRGB.keySet()) {
                     int filterIndexX = 0;
                     int filterIndexY = 0;
                     
                     List<Integer> perLocationRGB = yFilterRGB.get(location);
 
-                    // For each individual pixel in the current coordinates
                     for (int index = 0; index < 3; index++) {
                         perLocationRGB.set(index, perLocationRGB.get(index) * Y_FILTER[filterIndexX][filterIndexY]);
                     }
@@ -166,13 +171,36 @@ public class Sobel {
 
                 Gy /= xFilterRGB.size() * 3;
 
+                // Use the Sobel formula to determine what the RGB values for the current pixel should be set to in the output image
                 G = (int) Math.sqrt(Math.pow(Gx, 2) + Math.pow(Gy, 2));
 
+                // Set the RGB values for the current pixel
                 setRGB(G, x, y);
 
+                // Clear all of the Maps to prepare for the next iteration
                 preFilterRGB.clear();
+                xFilterRGB.clear();
+                yFilterRGB.clear();
             }
         }
+    }
+
+    /**
+     * Populates a Map with pre-filtered RGB values for some point (x, y) and its neighbors in a 3x3 grid
+     * @param preFilterRGB
+     * @param x coordinate
+     * @param y coordinate
+     */
+    private void populateMap(Map<String, List<Integer>> preFilterRGB, int x, int y) {
+        preFilterRGB.put("upperLeft", getRGB(x-1, y-1));
+        preFilterRGB.put("upperCenter", getRGB(x, y-1));
+        preFilterRGB.put("upperRight", getRGB(x+1, y-1));
+        preFilterRGB.put("centerLeft", getRGB(x-1, y));
+        preFilterRGB.put("center", getRGB(x, y));
+        preFilterRGB.put("centerRight", getRGB(x+1, y));
+        preFilterRGB.put("lowerLeft", getRGB(x-1, y+1));
+        preFilterRGB.put("lowerCenter", getRGB(x, y+1));
+        preFilterRGB.put("lowerRight", getRGB(x+1, y+1));
     }
 
     public static void main(String[] args) {
