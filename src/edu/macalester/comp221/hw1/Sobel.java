@@ -103,7 +103,7 @@ public class Sobel {
                 preFilterRGB.put("centerLeft", getRGB(x-1, y));
                 preFilterRGB.put("center", getRGB(x, y));
                 preFilterRGB.put("centerRight", getRGB(x+1, y));
-                preFilterRGB.put("lowerLeft", getRGB(x+1, y+1));
+                preFilterRGB.put("lowerLeft", getRGB(x-1, y+1));
                 preFilterRGB.put("lowerCenter", getRGB(x, y+1));
                 preFilterRGB.put("lowerRight", getRGB(x+1, y+1));
 
